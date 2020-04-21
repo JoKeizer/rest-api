@@ -63,7 +63,7 @@ router.post("/", courseValidationChecks, asyncHandler(async (req, res) => {
             const course = await Course.create(req.body);
             res.status(201)
                 .json(course)
-                .location(`/courses/${course.id}`)
+                .location(`/${course.id}`)
         }
     } catch (error) {
         res.status(500).json({ message: error.message });
