@@ -3,6 +3,9 @@
 // load modules
 const express = require('express');
 const morgan = require('morgan');
+//path router
+const userRouter = require('./routes/users');
+const courseRouter = require('./routes/courses');
 
 // Sequelize
 const { sequelize } = require('./models');
@@ -26,7 +29,9 @@ const app = express();
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
 
-// TODO setup your api routes here
+// TODO setup your api routes here / Create the user routes / middleware function
+app.use('/api/users', userRouter);
+app.use('/api/courses', courseRouter);
 
 // setup a friendly greeting for the root route
 app.get('/', (req, res) => {

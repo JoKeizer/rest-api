@@ -1,70 +1,42 @@
-'use strict';
-
+'use strict'
 const Sequelize = require('sequelize');
 
 module.exports = (sequelize) => {
-  class User extends Sequelize.Model { }
-  User.init({
-    // attributes
-    id: {
-      type: Sequelize.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
-    firstName: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: 'Please provide a value for "firstName"'
+    class User extends Sequelize.Model { }
+    User.init({
+        id: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
         },
-        notEmpty: {
-          msg: 'Please provide a value for "firstName"'
-        }
-      }
-    },
-    lastName: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: 'Please provide a value for "lastName"'
+        firstName: {
+            type: Sequelize.STRING,
+            allowNull: false
         },
-        notEmpty: {
-          msg: 'Please provide a value for "lastName"'
-        }
-      }
-    },
-    emailAddress: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: 'Please provide a value for "emailAddress"'
+        lastName: {
+            type: Sequelize.STRING,
+            allowNull: false,
         },
-        notEmpty: {
-          msg: 'Please provide a value for "emailAddress"'
-        }
-      }
-    },
-    password: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: 'Please provide a value for "password"'
+        emailAddress: {
+            type: Sequelize.STRING,
+            allowNull: false,
         },
-        notEmpty: {
-          msg: 'Please provide a value for "password"'
+        password: {
+            type: Sequelize.STRING,
+            allowNull: false
         }
-      }
+
+    }, { sequelize });
+
+    User.associate = (models) => {
+        // ADD ASSOCIATIONS with courses
+        User.hasMany(models.Course, {
+            as: 'creator',
+            foreignKey: {
+                fieldName: 'userId',
+                allowNull: false,
+            },
+        });
     }
-  }, { sequelize });
-
-  //Define associations between your models
-  User.associate = (models) => {
-    User.hasMany(models.Course);
-  };
-
-  return User;
+    return User;
 };

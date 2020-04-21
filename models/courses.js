@@ -1,63 +1,45 @@
-
-'use strict';
+'use strict'
 
 const Sequelize = require('sequelize');
 
 module.exports = (sequelize) => {
-  class Course extends Sequelize.Model { }
-  Course.init({
-    // attributes
-    id: {
-      type: Sequelize.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
-    title: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: 'Please provide a value for "title"'
+    class Course extends Sequelize.Model { }
+    Course.init({
+        id: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
         },
-        notEmpty: {
-          msg: 'Please provide a value for "title"'
-        }
-      }
-    },
-    description: {
-      type: Sequelize.TEXT,
-      allowNull: false,
-      validate: {
-        notNull: {
-          msg: 'Please provide a value for "description"'
+        title: {
+            type: Sequelize.STRING,
+            allowNull: false,
+        
         },
-        notEmpty: {
-          msg: 'Please provide a value for "description"'
+        description: {
+            type: Sequelize.TEXT,
+            allowNull: false,
+        },
+        estimatedTime: {
+            type: Sequelize.STRING,
+            allowNull: true,
+        },
+        materialsNeeded: {
+            type: Sequelize.STRING,
+            allowNull: true,
         }
-      }
-    },
-    estimatedTime: {
-      type: Sequelize.STRING,
-      allowNull: true
-    },
-    materialsNeeded: {
-      type: Sequelize.STRING,
-      allowNull: true
-    }
-  }, {
-    sequelize,
-    associate: {
+
+    }, { sequelize });
+
+    Course.associate = (models) => {
+        // ADD ASSOCIATIONS with courses Model
+        Course.belongsTo(models.User, {
+            as: 'creator',
+            foreignKey: {
+                fieldName: 'userId',
+                allowNull: false,
+            }
+        });
 
     }
-  });
-
-//Define associations between your models
-
-  Course.associate = (models) => {
-    Course.belongsTo(models.User, {
-      foreignKey: 'userId',
-    });
-  };
-
-  return Course;
+    return Course;
 };
