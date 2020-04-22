@@ -93,10 +93,10 @@ router.get('/:id', asyncHandler (async(req, res) => {
 // POST route to create new course user needs to be authenticated
 router.post("/",[
     check('title')
-        .exists({ checkNull: true, checkFalsy: true })
+        .exists()
         .withMessage('Title is required'),
-        check('description')
-        .exists({ checkNull: true, checkFalsy: true })
+    check('description')
+        .exists()
         .withMessage('Description is required')
 ], authenticateUser, asyncHandler(async (req, res) => {
     try {
