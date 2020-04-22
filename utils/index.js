@@ -5,6 +5,8 @@
 const { User } = require('../models');
 
 module.exports = {
+
+    
    //asyncHandler try catch callback
     asyncHandler: (callback) => async (req, res, next) => {
       try {

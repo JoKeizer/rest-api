@@ -9,6 +9,10 @@ const { Course, User } = require('../models');
 //Validation
 const { check, validationResult } = require('express-validator/check');
 
+//bcryptjs for Hashing the password
+const bcryptjs = require('bcryptjs');
+//Get the basic auth credentials from the given request.
+const auth = require('basic-auth');
 
 // error wrapper function
 function asyncHandler(cb) {
@@ -21,41 +25,82 @@ function asyncHandler(cb) {
     };
   }
 
+  const authenticateUser = async (req, res, next) => {
+    //reset message to null
+    let message = null;
+    // User's credentials from the Authorization header 
+    const credentials = auth(req);
+    
+    // check whether credentials are being passed to locate user in database
+    if (credentials) {
+        const user = await User.findOne({
+            where: {
+                emailAddress: credentials.name,
+            }
+        })
+        //User exists and compare passwords
+        if (user) {
+            const authenticated = bcryptjs
+                .compareSync(credentials.pass, user.password);
+
+            if (authenticated) {
+                req.currentUser = user;
+            } else {
+                message = `Authentication failure for username: ${user.emailAddress}`
+            }
+        } else {
+            message = `User not found for username: ${credentials.name}`;
+        }
+    } else {
+        message = 'Auth header not found';
+    }
+
+    if (message) {
+        console.warn(message);
+
+        res.status(401).json({ message: 'Access Denied' });
+
+    } else {
+        next()
+    }
+}
+
+// GET route to get all courses 
 router.get('/', asyncHandler(async(req, res) => {
     const courses = await Course.findAll({
-        include: [
-          {
+        // match with assiciation using the specified 'creator' keyword
+        include: [{
             model: User,
-            attributes: ['firstName', 'lastName', 'emailAddress'],
-          }
-        ],
-        attributes: {
-          exclude: ['createdAt', 'updatedAt'],
-        }
-      });
-      return res.status(200).json(courses);
+            as: 'creator',
+        }]
+    });
+    res.json(courses);
 }));
 
+// GET route to get course with id
 router.get('/:id', asyncHandler (async(req, res) => {
-    const course = await Course.findByPk(req.params.id);
-      res.status(200).json(course);
+    const course = await Course.findByPk(req.params.id, {
+        include: [{
+            model: User,
+            as: 'creator',
+        }]
+    });
+    res.json(course);
 }));
 
-// ValidationCheck function
-const courseValidationChecks = [
+
+
+// POST route to create new course user needs to be authenticated
+router.post("/",[
     check('title')
-        .exists()
+        .exists({ checkNull: true, checkFalsy: true })
         .withMessage('Title is required'),
-    check('description')
-        .exists()
+        check('description')
+        .exists({ checkNull: true, checkFalsy: true })
         .withMessage('Description is required')
-];
-
-
-router.post("/", courseValidationChecks, asyncHandler(async (req, res) => {
+], authenticateUser, asyncHandler(async (req, res) => {
     try {
         const errors = validationResult(req);
-
         if (!errors.isEmpty()) {
             const errorMessages = errors.array().map(error => error.msg);
             res.status(400).json({ errors: errorMessages });
@@ -69,6 +114,43 @@ router.post("/", courseValidationChecks, asyncHandler(async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }));
+
+// PUT route to update a course user needs to be authenticated
+router.put('/:id', authenticateUser, async (req, res) => {
+    try {
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            const errorMessages = errors.array().map(error => error.msg);
+            res.status(400).json({ errors: errorMessages });
+        } else {
+            const course = await Course.findByPk(req.params.id);
+            if (course) {
+                await course.update(req.body)
+                res.status(204).end();
+            } else {
+                res.status(404).json({ message: "Course not found" });
+            }
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// DELETE route to delete a course
+router.delete('/:id', authenticateUser, async (req, res) => {
+    try {
+        const course = await Course.findByPk(req.params.id);
+        if (course) {
+            await course.destroy();
+            res.status(204).end();
+        } else {
+            res.status(404).json({ message: "Course not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
 
   
 module.exports = router;
