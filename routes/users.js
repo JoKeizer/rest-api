@@ -81,7 +81,6 @@ const authenticateUser = async (req, res, next) => {
   }));
 
 
-
 // Add a new user with validation check
 router.post('/', [
     check('firstName')

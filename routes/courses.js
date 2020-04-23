@@ -89,13 +89,6 @@ router.get('/:id', asyncHandler (async(req, res) => {
 }));
 
 
-// The /courses POST route is creating new courses just fine but it 
-// should also return no content and set the Location header to the URI 
-// for the newly created course. Right now, it is returning pretty much 
-// all of the info for the newly created course and the Location header, 
-// which should look like /courses/4 with "4" being the id of the newly created course, isn't being set.
-
-
 // POST route to create new course user needs to be authenticated
 router.post("/",[
     check('title')
