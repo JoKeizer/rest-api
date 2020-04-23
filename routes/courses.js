@@ -89,6 +89,12 @@ router.get('/:id', asyncHandler (async(req, res) => {
 }));
 
 
+// The /courses POST route is creating new courses just fine but it 
+// should also return no content and set the Location header to the URI 
+// for the newly created course. Right now, it is returning pretty much 
+// all of the info for the newly created course and the Location header, 
+// which should look like /courses/4 with "4" being the id of the newly created course, isn't being set.
+
 
 // POST route to create new course user needs to be authenticated
 router.post("/",[
@@ -97,7 +103,10 @@ router.post("/",[
         .withMessage('Title is required'),
     check('description')
         .exists()
-        .withMessage('Description is required')
+        .withMessage('Description is required'),
+    check("userId")
+    .exists()
+    .withMessage("You must provide a User ID")
 ], authenticateUser, asyncHandler(async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -106,9 +115,7 @@ router.post("/",[
             res.status(400).json({ errors: errorMessages });
         } else {
             const course = await Course.create(req.body);
-            res.status(201)
-                .json(course)
-                .location(`/${course.id}`)
+            res.status(201).json().location(`https://localhost:${process.env.PORT || 5000}/api/courses/${course.id}`)
         }
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -116,7 +123,17 @@ router.post("/",[
 }));
 
 // PUT route to update a course user needs to be authenticated
-router.put('/:id', authenticateUser, async (req, res) => {
+router.put('/:id', [
+    check('title')
+        .exists()
+        .withMessage('Title is required'),
+    check('description')
+        .exists()
+        .withMessage('Description is required'),
+    check("userId")
+    .exists()
+    .withMessage("You must provide a User ID")
+], authenticateUser, async (req, res) => {
     try {
         const errors = validationResult(req);
 

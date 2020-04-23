@@ -13,7 +13,6 @@ const auth = require('basic-auth');
 const { check, validationResult } = require('express-validator/check');
 
 
-
 //connect to database
 const { Course, User } = require('../models');
 
@@ -69,20 +68,18 @@ const authenticateUser = async (req, res, next) => {
     }
 }
 
-//Get all users
-// Route that returns the current authenticated user.
-// router.get('/', (req, res) => {
-//     const user = req.currentUser;
-  
-//     res.json({
-//       name: `${user.firstName} ${user.lastName}`,
-//       username: user.emailAddress,
-//     });
-//   });
-  
+//Get users
+  router.get('/',  authenticateUser, asyncHandler(async (req, res) => {
+      const user = req.currentUser;
+      const firstName = user.firstName
+      console.log(firstName)
+      
+    res.status(200).json({
+        name: `${user.firstName} ${user.lastName}`,
+        email: `${user.emailAddress}`
+    })
+  }));
 
-
-  router.get('/',  authenticateUser, asyncHandler(async (req, res) => res.status(200).json(req.user)));
 
 
 // Add a new user with validation check
@@ -116,7 +113,7 @@ router.post('/', [
 
             await User.create(user);
 
-            res.status(201).end().location('/').end();
+            res.status(201).end().location('/');
         }
     } catch (error) {
         if (error = 'SequelizeUniqueConstraintError') {
