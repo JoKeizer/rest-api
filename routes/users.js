@@ -111,8 +111,7 @@ router.post('/', [
             user.password = bcryptjs.hashSync(user.password);
 
             await User.create(user);
-
-            res.status(201).end().location('/');
+            res.location(`/`).status(201).end();
         }
     } catch (error) {
         if (error = 'SequelizeUniqueConstraintError') {

@@ -101,14 +101,22 @@ router.post("/",[
     .exists()
     .withMessage("You must provide a User ID")
 ], authenticateUser, asyncHandler(async (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             const errorMessages = errors.array().map(error => error.msg);
-            res.status(400).json({ errors: errorMessages });
+            res
+                .status(400).json({ errors: errorMessages})
+
         } else {
             const course = await Course.create(req.body);
-            res.status(201).json().location(`https://localhost:${process.env.PORT || 5000}/api/courses/${course.id}`)
+            // get new course id for Location header
+            const id = course.id;
+            // Set the status to 201 Created, set Location header, and end the response.
+            res.location(`/api/courses/${id}`).status(201).end();
+
         }
     } catch (error) {
         res.status(500).json({ message: error.message });
